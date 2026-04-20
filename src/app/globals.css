@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+/* ─── Installer Notes Design Tokens ─── */
+@theme {
+  --color-primary: #E31C23;
+  --color-bg: #0F172A;
+  --color-surface: #1E293B;
+  --color-surface-hover: #263348;
+  --color-border: #2D3A4D;
+  --color-text: #CBD5E1;
+  --color-text-muted: #94A3B8;
+  --color-text-dim: #64748B;
+  --color-text-bright: #F1F5F9;
+
+  --font-display: var(--font-inter), 'Inter', sans-serif;
+
+  --radius: 0.25rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-full: 9999px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-display);
+  background-color: #0F172A;
+  color: #CBD5E1;
+}
