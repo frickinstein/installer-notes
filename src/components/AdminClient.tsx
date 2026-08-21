@@ -8,6 +8,7 @@ import { approveNote, rejectNote } from "@/actions/admin";
 export function AdminClient({ notes: initialNotes, onCountChange }: { notes: any[]; onCountChange?: (n: number) => void }) {
   const [notes, setNotes] = useState(initialNotes);
   const [acting, setActing] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   function removeNote(noteId: string) {
     const updated = notes.filter((n) => n.id !== noteId);
@@ -15,23 +16,38 @@ export function AdminClient({ notes: initialNotes, onCountChange }: { notes: any
     onCountChange?.(updated.length);
   }
 
-  async function handleApprove(noteId: string) {
-    setActing(noteId);
-    const result = await approveNote(noteId);
-    if ("success" in result) {
-      removeNote(noteId);
-    }
-    setActing(null);
+  function setError(noteId: string, message: string) {
+    setErrors((prev) => ({ ...prev, [noteId]: message }));
   }
 
-  async function handleReject(noteId: string) {
-    setActing(noteId);
-    const result = await rejectNote(noteId);
-    if ("success" in result) {
-      removeNote(noteId);
-    }
-    setActing(null);
+  function clearError(noteId: string) {
+    setErrors((prev) => {
+      if (!(noteId in prev)) return prev;
+      const next = { ...prev };
+      delete next[noteId];
+      return next;
+    });
   }
+
+  async function act(noteId: string, fn: (id: string) => Promise<{ success?: boolean; error?: string }>) {
+    setActing(noteId);
+    clearError(noteId);
+    try {
+      const result = await fn(noteId);
+      if (result?.success) {
+        removeNote(noteId);
+      } else {
+        setError(noteId, result?.error ?? "Something went wrong. The note was not updated.");
+      }
+    } catch {
+      setError(noteId, "Something went wrong. The note was not updated.");
+    } finally {
+      setActing(null);
+    }
+  }
+
+  const handleApprove = (noteId: string) => act(noteId, approveNote);
+  const handleReject = (noteId: string) => act(noteId, rejectNote);
 
   if (notes.length === 0) {
     return (
@@ -93,6 +109,10 @@ export function AdminClient({ notes: initialNotes, onCountChange }: { notes: any
                   </p>
                 ))}
               </div>
+            )}
+
+            {errors[note.id] && (
+              <p className="mt-3 text-sm text-red-400">{errors[note.id]}</p>
             )}
 
             <div className="flex gap-2 mt-4">

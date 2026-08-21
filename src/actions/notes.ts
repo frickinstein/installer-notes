@@ -1,7 +1,6 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { adminClient } from "@/lib/supabase/admin";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3001";
 const MAX_PHOTOS = 5;
@@ -324,13 +323,14 @@ function isValidFacebookUrl(url: string): boolean {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function uploadPhotos(supabase: any, userId: string, noteId: string, photos: File[]) {
-  const admin = adminClient();
-
+  // Uploads run as the authenticated user via the anon client. The
+  // installer-note-media storage policies allow writes only under the
+  // user's own ${auth.uid()}/ folder, so no service-role client is needed.
   for (const photo of photos.slice(0, MAX_PHOTOS)) {
     const ext = photo.name.split(".").pop()?.toLowerCase() ?? "jpg";
     const fileName = `${userId}/${noteId}/${crypto.randomUUID()}.${ext}`;
 
-    const { error: uploadErr } = await admin.storage
+    const { error: uploadErr } = await supabase.storage
       .from("installer-note-media")
       .upload(fileName, photo, { contentType: photo.type, upsert: false });
 
@@ -353,10 +353,9 @@ async function syncPhotos(supabase: any, userId: string, noteId: string, keepIds
     .eq("note_id", noteId);
 
   const current = currentPhotos ?? [];
-  const admin = adminClient();
   const toDelete = current.filter((p: { id: string }) => !keepIds.includes(p.id));
   for (const photo of toDelete) {
-    await admin.storage.from("installer-note-media").remove([photo.storage_path]);
+    await supabase.storage.from("installer-note-media").remove([photo.storage_path]);
     await supabase.from("installer_note_media").delete().eq("id", photo.id);
   }
 

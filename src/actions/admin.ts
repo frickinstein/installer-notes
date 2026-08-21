@@ -89,43 +89,43 @@ export async function approveNote(noteId: string) {
   const { supabase, user, error } = await requireModOrAdmin();
   if (error || !user) return { error: error ?? "Not authenticated." };
 
-  const { error: updateErr } = await supabase
+  // Service-role client: RLS on installer_notes only lets authors update their
+  // own rows, so a mod/admin acting on someone else's note would silently
+  // match zero rows with the user-scoped client.
+  const admin = adminClient();
+
+  const { data: note, error: updateErr } = await admin
     .from("installer_notes")
     .update({ status: "approved" })
-    .eq("id", noteId);
+    .eq("id", noteId)
+    .select("user_id, group_id")
+    .maybeSingle();
 
   if (updateErr) return { error: updateErr.message };
+  if (!note) return { error: "Note not found." };
 
-  const { data: note } = await supabase
-    .from("installer_notes")
-    .select("user_id, group_id")
-    .eq("id", noteId)
-    .single();
+  await admin.from("installer_notifications").insert({
+    user_id: note.user_id,
+    type: "note_approved",
+    message: "Your install note has been approved and is now live!",
+  });
 
-  if (note) {
-    await supabase.from("installer_notifications").insert({
-      user_id: note.user_id,
-      type: "note_approved",
-      message: "Your install note has been approved and is now live!",
-    });
+  // Fire campaign event (fire-and-forget)
+  const { fireCampaignEvent } = await import("@/lib/email/campaign-events");
+  void fireCampaignEvent(note.user_id, "note_approved");
 
-    // Fire campaign event (fire-and-forget)
-    const { fireCampaignEvent } = await import("@/lib/email/campaign-events");
-    void fireCampaignEvent(note.user_id, "note_approved");
-
-    // Notify anyone who requested info on this vehicle (fire-and-forget)
-    if (note.group_id) {
-      const { notifyRequestersOfNewNote } = await import("@/actions/requests");
-      // Fetch vehicle label for the email
-      const { data: vehicle } = await adminClient()
-        .from("vehicle_catalog")
-        .select("make, model")
-        .eq("group_id", note.group_id)
-        .limit(1)
-        .maybeSingle();
-      const vehicleLabel = vehicle ? `${vehicle.make} ${vehicle.model}` : "this vehicle";
-      void notifyRequestersOfNewNote(note.group_id, vehicleLabel);
-    }
+  // Notify anyone who requested info on this vehicle (fire-and-forget)
+  if (note.group_id) {
+    const { notifyRequestersOfNewNote } = await import("@/actions/requests");
+    // Fetch vehicle label for the email
+    const { data: vehicle } = await admin
+      .from("vehicle_catalog")
+      .select("make, model")
+      .eq("group_id", note.group_id)
+      .limit(1)
+      .maybeSingle();
+    const vehicleLabel = vehicle ? `${vehicle.make} ${vehicle.model}` : "this vehicle";
+    void notifyRequestersOfNewNote(note.group_id, vehicleLabel);
   }
 
   await logAction(supabase, user.id, "approve_note", "note", noteId);
@@ -136,29 +136,27 @@ export async function rejectNote(noteId: string) {
   const { supabase, user, error } = await requireModOrAdmin();
   if (error || !user) return { error: error ?? "Not authenticated." };
 
-  const { error: updateErr } = await supabase
+  // Service-role client — see approveNote for why.
+  const admin = adminClient();
+
+  const { data: note, error: updateErr } = await admin
     .from("installer_notes")
     .update({ status: "rejected" })
-    .eq("id", noteId);
+    .eq("id", noteId)
+    .select("user_id")
+    .maybeSingle();
 
   if (updateErr) return { error: updateErr.message };
+  if (!note) return { error: "Note not found." };
 
-  const { data: note } = await supabase
-    .from("installer_notes")
-    .select("user_id")
-    .eq("id", noteId)
-    .single();
+  await admin.from("installer_notifications").insert({
+    user_id: note.user_id,
+    type: "note_rejected",
+    message: "Your install note was reviewed and could not be approved. Please review our guidelines and resubmit.",
+  });
 
-  if (note) {
-    await supabase.from("installer_notifications").insert({
-      user_id: note.user_id,
-      type: "note_rejected",
-      message: "Your install note was reviewed and could not be approved. Please review our guidelines and resubmit.",
-    });
-
-    const { fireCampaignEvent } = await import("@/lib/email/campaign-events");
-    void fireCampaignEvent(note.user_id, "note_rejected");
-  }
+  const { fireCampaignEvent } = await import("@/lib/email/campaign-events");
+  void fireCampaignEvent(note.user_id, "note_rejected");
 
   await logAction(supabase, user.id, "reject_note", "note", noteId);
   return { success: true };
@@ -331,12 +329,16 @@ export async function updateUserRole(userId: string, role: string) {
     return { error: "Only admins can promote to admin." };
   }
 
-  const { error: updateErr } = await supabase
+  // Service-role client: RLS on profiles only allows self-updates.
+  const { data: updated, error: updateErr } = await adminClient()
     .from("profiles")
     .update({ installer_role: role })
-    .eq("id", userId);
+    .eq("id", userId)
+    .select("id")
+    .maybeSingle();
 
   if (updateErr) return { error: updateErr.message };
+  if (!updated) return { error: "User not found." };
 
   await logAction(supabase, user.id, "change_role", "user", userId, `Set role to ${role}`);
   return { success: true };
@@ -352,15 +354,19 @@ export async function suspendUser(userId: string, days: number, reason: string) 
   const suspendedUntil = new Date();
   suspendedUntil.setDate(suspendedUntil.getDate() + days);
 
-  const { error: updateErr } = await supabase
+  // Service-role client: RLS on profiles only allows self-updates.
+  const { data: updated, error: updateErr } = await adminClient()
     .from("profiles")
     .update({
       suspended_until: suspendedUntil.toISOString(),
       suspension_reason: reason.trim(),
     })
-    .eq("id", userId);
+    .eq("id", userId)
+    .select("id")
+    .maybeSingle();
 
   if (updateErr) return { error: updateErr.message };
+  if (!updated) return { error: "User not found." };
 
   await supabase.from("installer_notifications").insert({
     user_id: userId,
@@ -376,12 +382,16 @@ export async function unsuspendUser(userId: string) {
   const { supabase, user, error } = await requireModOrAdmin();
   if (error || !user) return { error: error ?? "Not authenticated." };
 
-  const { error: updateErr } = await supabase
+  // Service-role client: RLS on profiles only allows self-updates.
+  const { data: updated, error: updateErr } = await adminClient()
     .from("profiles")
     .update({ suspended_until: null, suspension_reason: null })
-    .eq("id", userId);
+    .eq("id", userId)
+    .select("id")
+    .maybeSingle();
 
   if (updateErr) return { error: updateErr.message };
+  if (!updated) return { error: "User not found." };
 
   await supabase.from("installer_notifications").insert({
     user_id: userId,
