@@ -1,5 +1,4 @@
 import { SignupForm } from "@/components/SignupForm";
-import { ProductToggle } from "@/components/ProductToggle";
 import { getSiteType, getSiteName } from "@/lib/site";
 import type { Metadata } from "next";
 
@@ -58,7 +57,6 @@ export default async function SignupPage() {
           <span className="text-white text-2xl font-black">{siteName}</span>
           <p className="text-text-muted text-sm mt-2">Create your free account</p>
         </div>
-        <ProductToggle defaultProduct="installer-notes" />
         <div className="bg-surface border border-border rounded-xl p-8">
           <SignupForm />
         </div>

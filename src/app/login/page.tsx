@@ -1,5 +1,4 @@
 import { LoginForm } from "@/components/LoginForm";
-import { ProductToggle } from "@/components/ProductToggle";
 import { getSiteType, getSiteName } from "@/lib/site";
 import type { Metadata } from "next";
 
@@ -58,7 +57,6 @@ export default async function LoginPage() {
           <span className="text-white text-2xl font-black">{siteName}</span>
           <p className="text-text-muted text-sm mt-2">Sign in to your account</p>
         </div>
-        <ProductToggle defaultProduct="installer-notes" />
         <div className="bg-surface border border-border rounded-xl p-8">
           <LoginForm />
         </div>
