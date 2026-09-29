@@ -1,5 +1,11 @@
 # Installer Notes — Native App (React Native / Expo) Dev Plan
 
+> **STATUS: paused at Phase 0 since 2026-05-19 (ghost).** No app code was scaffolded; the
+> `apps/web` monorepo move never happened; the Phase 0 migration
+> (`supabase/migrations/20260519170000_installer_note_media_delete_policy.sql`) is still
+> unapplied. Moved from the repo root to `docs/planning/` on 2026-09-29. Do not implement
+> against this plan without re-reading §0 and the live schema first.
+
 > Canonical, session-resumable build plan. Progress is tracked by the `[ ]` / `[x]`
 > checkboxes below. Update **§0 Session Context** and **§8 Progress Log** at the end
 > of every working session so the next session can resume cold.
