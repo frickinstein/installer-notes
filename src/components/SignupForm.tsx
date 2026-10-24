@@ -2,7 +2,9 @@
 
 import { useActionState, useEffect } from "react";
 import { signUp, type AuthState } from "@/actions/auth";
+import { PASSWORD_MIN } from "@/lib/password";
 import Link from "next/link";
+import { Turnstile } from "@/components/Turnstile";
 import { trackEvent } from "@/lib/analytics";
 
 export function SignupForm() {
@@ -64,10 +66,10 @@ export function SignupForm() {
           name="password"
           type="password"
           required
-          minLength={8}
+          minLength={PASSWORD_MIN}
           autoComplete="new-password"
           className="w-full bg-bg border border-border rounded-lg px-4 py-2.5 text-text-bright placeholder:text-text-dim focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-          placeholder="At least 8 characters"
+          placeholder={`At least ${PASSWORD_MIN} characters`}
         />
       </div>
 
@@ -91,6 +93,8 @@ export function SignupForm() {
           , and confirm that I am using my real, full name.
         </span>
       </label>
+
+      <Turnstile resetKey={state} />
 
       <button
         type="submit"

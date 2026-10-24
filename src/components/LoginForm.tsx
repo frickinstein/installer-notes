@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { signIn, type AuthState } from "@/actions/auth";
 import Link from "next/link";
+import { Turnstile } from "@/components/Turnstile";
 
 export function LoginForm() {
   const [state, formAction, pending] = useActionState<AuthState, FormData>(signIn, null);
@@ -44,6 +45,8 @@ export function LoginForm() {
           placeholder="Enter your password"
         />
       </div>
+
+      <Turnstile resetKey={state} />
 
       <button
         type="submit"
