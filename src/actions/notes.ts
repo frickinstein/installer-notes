@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { adminClient } from "@/lib/supabase/admin";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3001";
 const MAX_PHOTOS = 5;
@@ -74,6 +75,10 @@ export async function submitNote(
   } catch {
     status = "flagged";
   }
+  // The author's session may only write pending/flagged: the database refuses
+  // a self-approval (SnapTip migration 195, S-40). An AI approval is applied
+  // with the service role once the row exists.
+  const authorStatus = status === "approved" ? "pending" : status;
 
   // Collect photos from form
   const photos: File[] = [];
@@ -93,12 +98,13 @@ export async function submitNote(
         common_problems: commonProblems,
         youtube_url: youtubeUrl,
         facebook_url: facebookUrl,
-        status,
+        status: authorStatus,
         updated_at: new Date().toISOString(),
       })
       .eq("id", existing.id);
 
     if (updateErr) return { error: updateErr.message };
+    if (status === "approved") await applyModerationApproval(existing.id, user.id);
 
     if (noteType === "ppf") {
       const hasDifficulty = [hood, frontBumper, fender, roof, doors, quarterPanels, trunkLid, rearBumper].some((v) => v !== null);
@@ -134,12 +140,13 @@ export async function submitNote(
       common_problems: commonProblems,
       youtube_url: youtubeUrl,
       facebook_url: facebookUrl,
-      status,
+      status: authorStatus,
     })
     .select("id")
     .single();
 
   if (insertErr) return { error: insertErr.message };
+  if (note && status === "approved") await applyModerationApproval(note.id, user.id);
 
   if (note) {
     const { fireCampaignEvent } = await import("@/lib/email/campaign-events");
@@ -427,4 +434,15 @@ async function upsertPpfDifficulty(supabase: any, noteId: string, ratings: {
   } else {
     await supabase.from("installer_note_ppf_difficulty").insert({ note_id: noteId, ...payload });
   }
+}
+
+// Service role: an author's own session can't set status = approved (S-40).
+async function applyModerationApproval(noteId: string, userId: string) {
+  const { error } = await adminClient()
+    .from("installer_notes")
+    .update({ status: "approved" })
+    .eq("id", noteId)
+    .eq("user_id", userId);
+  // The note stays pending (a mod approves it) — log so it isn't silent.
+  if (error) console.error("[notes] AI approval not applied:", noteId, error.message);
 }
