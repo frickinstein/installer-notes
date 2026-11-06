@@ -1,0 +1,54 @@
+{
+  "expo": {
+    "name": "Tint Notes",
+    "slug": "tint-notes",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "tintnotes",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0F172A",
+    "ios": {
+      "bundleIdentifier": "com.tintnotes.app",
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Tint Notes uses the camera so you can add install photos to a note.",
+        "NSPhotoLibraryUsageDescription": "Tint Notes uses your photo library so you can add install photos to a note."
+      }
+    },
+    "android": {
+      "package": "com.tintnotes.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#0F172A",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundImage": "./assets/images/android-icon-background.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0F172A",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 120
+        }
+      ],
+      "expo-secure-store",
+      "expo-image",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Tint Notes uses the camera so you can add install photos to a note.",
+          "photosPermission": "Tint Notes uses your photo library so you can add install photos to a note."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}

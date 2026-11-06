@@ -7,7 +7,7 @@ calls under `src/` and the schema snapshot `supabase/introspect_schema_response.
 ## notes
 
 - [ ] installer_notes (`note_type` tint | ppf, `status`) — notes — live — stub — `src/actions/notes.ts`, `src/actions/admin.ts`, snapshot `TABLE installer_notes`
-- [ ] installer_note_media (Storage bucket `installer-note-media`) — notes — live — stub — `src/actions/notes.ts`, snapshot `TABLE installer_note_media`; DELETE policy in `supabase/migrations/20260519170000_installer_note_media_delete_policy.sql` (unapplied)
+- [ ] installer_note_media (Storage bucket `installer-note-media`) — notes — live — stub — `src/actions/notes.ts`, snapshot `TABLE installer_note_media`; user DELETE policy = SnapTip migration 234 (unapplied)
 - [ ] installer_note_difficulty (per-glass-panel scores) — notes — live — stub — `src/actions/notes.ts`, snapshot `TABLE installer_note_difficulty`
 - [ ] installer_note_ppf_difficulty (per-body-panel scores) — notes — live — stub — `src/actions/notes.ts`, snapshot `TABLE installer_note_ppf_difficulty`
 - [ ] installer_note_reports (flag a note) — notes — live — stub — `src/actions/notifications.ts`, snapshot `TABLE installer_note_reports`

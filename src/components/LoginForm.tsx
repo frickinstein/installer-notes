@@ -48,6 +48,12 @@ export function LoginForm() {
 
       <Turnstile resetKey={state} />
 
+      <p className="text-sm text-right -mt-1">
+        <Link href="/forgot-password" className="text-text-dim hover:text-primary transition-colors">
+          Forgot password?
+        </Link>
+      </p>
+
       <button
         type="submit"
         disabled={pending}

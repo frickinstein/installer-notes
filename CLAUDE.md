@@ -12,7 +12,7 @@ This Supabase project is **shared with SnapTip** (`~/projects/tintfam-business-m
 `vehicle_catalog` (SnapTip `039_vehicle_catalog.sql`). SnapTip's card: `docs/map/objects/platform/shared-auth-tintnotes.md`.
 Per `supabase/migrations/README.md` we own only `installer_*` / `email_*` / `vehicle_info_requests`; never reconstruct the
 baseline or touch a shared object without coordinating. Schema truth = `supabase/introspect_schema_response.json` (2026-05-19
-snapshot, SnapTip tables included). No credentials live locally — migrations are pasted into the Supabase Dashboard SQL editor.
+snapshot, SnapTip tables included). **Every migration — ours included — is numbered in SnapTip's ledger** (`~/projects/tintfam-business-management/supabase/migrations/`, `docs/map/migrations.md`); no SQL files here since 2026-11-06. Billy applies them in the Dashboard SQL editor.
 
 ## Routing
 
@@ -20,17 +20,20 @@ snapshot, SnapTip tables included). No credentials live locally — migrations a
 |---|---|
 | Pages / routes | `src/app/` (feed, search, vehicle/[groupId], submit, profile, leaderboard, admin, notifications) |
 | Server actions (notes, ratings, profiles, requests, settings, admin, auth) | `src/actions/` |
+| Password reset (own pages: `/forgot-password` → `/auth/confirm` gated link → `/reset-password`; token minted with `generateLink`, emailed via Resend, branded by host) | `src/actions/auth.ts` (forgotPassword / resetPassword), `src/lib/site-host.ts`, `src/app/auth/confirm/` |
+| Database Webhooks (Supabase → us): rating created → author notification + email + campaign event | `src/app/api/hooks/`, `src/lib/ratings/notify.ts`; bearer `SUPABASE_WEBHOOK_SECRET` |
+| Phone app doors (bearer user JWT): moderate a submitted note, signup campaign event | `src/app/api/mobile/` |
 | Email + drip campaigns | `src/lib/email/`, `src/app/api/cron/campaign-drip/` (Vercel cron, daily 19:00 UTC, `CRON_SECRET` bearer), webhook `src/app/api/webhooks/resend/` |
 | AI note moderation | `src/app/api/moderate-note/` |
 | Ratings audit | `src/app/api/admin/audit-ratings/` |
 | Schema, RLS, shared-DB rules | `supabase/` — `migrations/README.md` first |
-| Native app plan (paused at Phase 0, ghost) | `docs/planning/dev-plan-native.md` |
+| **Tint Notes phone app** (Expo, `mobile/` — built 2026-11-06, untested) | `docs/planning/dev-plan-native.md` first (§0 setup list), then `mobile/src/`. Its web doors: `src/app/api/mobile/`, `src/app/auth/mobile/`, `src/lib/moderate.ts`. Never run `expo start`; Billy does. |
 | What is X / what else moves if I change X (system map) | `map/CLAUDE.md` |
 
 ## Env vars (names only — values in Vercel and `.env.local`, never committed; template `.env.example`)
 
 `ANTHROPIC_API_KEY`, `CRON_SECRET`, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SUPABASE_URL`,
-`RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `RESEND_REPLY_TO`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_URL`.
+`RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `RESEND_REPLY_TO`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_URL`, `SUPABASE_WEBHOOK_SECRET`.
 
 ## Hard rules
 

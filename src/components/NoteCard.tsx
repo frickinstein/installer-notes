@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { NoteCardClient } from "./NoteCardClient";
 import { NotePhotos } from "./NotePhotos";
+import { NoteReportClient } from "./NoteReportClient";
 
 const TINT_PANELS = [
   { key: "rollups",       label: "Rollups" },
@@ -226,6 +227,13 @@ export function NoteCard({ note, currentUserId, supabaseUrl }: { note: any; curr
             </svg>
             View on Facebook
           </a>
+        </div>
+      )}
+
+      {/* Report (signed in, not your own note) — the row insert flags the note via trigger (SnapTip mig 235) */}
+      {currentUserId && !isOwnNote && (
+        <div className="mt-4 pt-3 border-t border-border flex justify-end">
+          <NoteReportClient noteId={note.id} />
         </div>
       )}
     </div>

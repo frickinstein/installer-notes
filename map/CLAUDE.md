@@ -11,7 +11,7 @@ of 2026-09-29, branch `main`. No cards yet: `objects/_index.md` holds one stub l
 |---|---|
 | live | in the live Supabase project and read or written by a `.from('…')` call under `src/` |
 | leftover | present in the schema snapshot, no `src/` reads (none found in slice 1) |
-| ghost | planned, not wired: the native app / `apps/web` monorepo plan, and the one migration written but never applied |
+| ghost | planned, not wired: the `apps/web` monorepo plan (superseded 2026-11-06 by the standalone `mobile/` app, which is built but untested) |
 
 ## SHARED — the two nouns that are not ours
 

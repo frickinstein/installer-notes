@@ -60,6 +60,14 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Someone already signed in asking for a reset: skip the email, go straight
+  // to the form. /reset-password itself shows "link expired" without a session.
+  if (pathname.startsWith("/forgot-password") && user) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/reset-password";
+    return NextResponse.redirect(url);
+  }
+
   return supabaseResponse;
 }
 

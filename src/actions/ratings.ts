@@ -1,9 +1,6 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { adminClient } from "@/lib/supabase/admin";
-import { sendEmail } from "@/lib/email/send";
-import { newRatingEmail } from "@/lib/email/templates/newRating";
 
 export type RatingState =
   | { error: string }
@@ -69,14 +66,10 @@ export async function submitRating(
     return { error: error.message };
   }
 
-  // Notify the note author (fire-and-forget)
-  if (note?.user_id) {
-    void notifyNoteAuthor(note.user_id, note.group_id, user.id, stars, review);
-
-    // Fire campaign event for the note author receiving a rating
-    const { fireCampaignEvent } = await import("@/lib/email/campaign-events");
-    void fireCampaignEvent(note.user_id, "rating_received");
-  }
+  // The author's notification + email + campaign event fire from the
+  // Database Webhook on installer_note_ratings INSERT
+  // (/api/hooks/rating-created, lib/ratings/notify.ts) — the same path the
+  // phone app's ratings take, so this action writes the row and nothing else.
 
   return { success: true, rating: inserted };
 }
@@ -126,91 +119,4 @@ export async function reportRating(
   }
 
   return { success: true };
-}
-
-// ─── Notification helper ─────────────────────────────────────────────────────
-
-async function notifyNoteAuthor(
-  authorId: string,
-  groupId: string,
-  reviewerId: string,
-  stars: number,
-  review: string
-) {
-  try {
-    const admin = adminClient();
-
-    // Get author's notification preferences
-    const { data: prefs } = await admin
-      .from("installer_notification_preferences")
-      .select("in_app, email")
-      .eq("user_id", authorId)
-      .eq("type", "new_rating")
-      .single();
-
-    // Default to both on if no preference row exists
-    const wantsInApp = prefs?.in_app ?? true;
-    const wantsEmail = prefs?.email ?? true;
-
-    if (!wantsInApp && !wantsEmail) return;
-
-    // Get reviewer's display name
-    const { data: reviewerProfile } = await admin
-      .from("profiles")
-      .select("full_name, username")
-      .eq("id", reviewerId)
-      .single();
-
-    const reviewerName = reviewerProfile?.full_name || reviewerProfile?.username || "An installer";
-
-    // Get vehicle info for the message
-    const { data: vehicle } = await admin
-      .from("vehicle_catalog")
-      .select("year, make, model")
-      .eq("group_id", groupId)
-      .order("year", { ascending: false })
-      .limit(1)
-      .single();
-
-    const vehicleLabel = vehicle
-      ? `${vehicle.year} ${vehicle.make} ${vehicle.model}`
-      : "a vehicle";
-
-    const starText = "\u2605".repeat(stars);
-
-    // In-app notification
-    if (wantsInApp) {
-      await admin.from("installer_notifications").insert({
-        user_id: authorId,
-        type: "new_rating",
-        message: `${reviewerName} rated your note for the ${vehicleLabel} ${starText}`,
-      });
-    }
-
-    // Email notification
-    if (wantsEmail) {
-      const { data: authUser } = await admin.auth.admin.getUserById(authorId);
-      const email = authUser?.user?.email;
-
-      const { data: authorProfile } = await admin
-        .from("profiles")
-        .select("username")
-        .eq("id", authorId)
-        .single();
-
-      if (email) {
-        const html = newRatingEmail({
-          username: authorProfile?.username ?? "",
-          reviewerName,
-          stars,
-          review,
-          vehicleLabel,
-          noteGroupId: groupId,
-        });
-        await sendEmail(email, `${reviewerName} rated your note ${starText}`, html);
-      }
-    }
-  } catch (err) {
-    console.error("[ratings] Failed to notify note author:", err);
-  }
 }
