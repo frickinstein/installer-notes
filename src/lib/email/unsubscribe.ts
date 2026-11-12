@@ -7,8 +7,17 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://installernotes.com
  * Format: base64url(userId:campaign:timestamp:signature)
  * No external JWT library needed — just HMAC-SHA256.
  */
+// UNSUBSCRIBE_SECRET is the signing secret. Until it is set, the legacy Supabase
+// service-role key is used, which is what every link already mailed was signed
+// with. Set UNSUBSCRIBE_SECRET to that same value before the legacy key is
+// removed, or old unsubscribe links stop working. SnapTip's
+// scripts/email-founding-push.mjs signs with the same secret.
 function getSecret(): string {
-  return process.env.SUPABASE_SERVICE_ROLE_KEY ?? "dev-secret";
+  return (
+    process.env.UNSUBSCRIBE_SECRET ||
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    "dev-secret"
+  );
 }
 
 function sign(data: string): string {
