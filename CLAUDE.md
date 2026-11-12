@@ -32,8 +32,8 @@ snapshot, SnapTip tables included). **Every migration — ours included — is n
 
 ## Env vars (names only — values in Vercel and `.env.local`, never committed; template `.env.example`)
 
-`ANTHROPIC_API_KEY`, `CRON_SECRET`, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SUPABASE_URL`,
-`RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `RESEND_REPLY_TO`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_URL`, `SUPABASE_WEBHOOK_SECRET`.
+`ANTHROPIC_API_KEY`, `CRON_SECRET`, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (legacy fallback `NEXT_PUBLIC_SUPABASE_ANON_KEY`), `NEXT_PUBLIC_SUPABASE_URL`,
+`RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `RESEND_REPLY_TO`, `SUPABASE_SECRET_KEY` (legacy fallback `SUPABASE_SERVICE_ROLE_KEY`), `SUPABASE_URL`, `UNSUBSCRIBE_SECRET` (unset = legacy service-role key signs unsubscribe links), `SUPABASE_WEBHOOK_SECRET`.
 
 ## Hard rules
 

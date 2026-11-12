@@ -5,11 +5,14 @@ import { AppState } from "react-native";
 import type { Database } from "./database.types";
 
 const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
-const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+// New publishable key first, legacy anon key as the fallback. Both are baked in
+// at build time, so a key change needs a new app build.
+const anonKey =
+  process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
 if (!url || !anonKey) {
   throw new Error(
-    "Missing EXPO_PUBLIC_SUPABASE_URL / EXPO_PUBLIC_SUPABASE_ANON_KEY — copy mobile/.env.example to mobile/.env"
+    "Missing EXPO_PUBLIC_SUPABASE_URL / EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY — copy mobile/.env.example to mobile/.env"
   );
 }
 

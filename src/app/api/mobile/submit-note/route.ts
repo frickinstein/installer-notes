@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
   // A user-scoped client: RLS decides what this token may read.
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)!,
     { global: { headers: { Authorization: `Bearer ${token}` } }, auth: { persistSession: false, autoRefreshToken: false } }
   );
   const { data: userData, error: userErr } = await supabase.auth.getUser(token);
