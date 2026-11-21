@@ -151,10 +151,11 @@ export default async function Home() {
         <div className="max-w-2xl mx-auto text-center">
           <p className="text-sm text-text-dim mb-2">Part of the SnapTip platform</p>
           <p className="text-text-muted text-sm">
-            Installer Notes is free forever. SnapTip is an all-in-one business
-            management app for tint, PPF, and coatings shops.{" "}
+            Installer Notes is free forever. SnapTip is business management
+            software for window tint and PPF shops: quotes, booking, jobs and
+            invoices.{" "}
             <a
-              href="https://snaptip.app"
+              href="https://www.snaptip.app/"
               className="text-primary hover:underline"
               target="_blank"
               rel="noopener noreferrer"

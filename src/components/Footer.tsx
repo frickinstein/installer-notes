@@ -7,14 +7,14 @@ export function Footer() {
         <p className="text-xs text-text-dim">
           Built by{" "}
           <a
-            href="https://snaptip.app"
+            href="https://www.snaptip.app/"
             className="text-text-muted hover:text-text transition-colors"
             target="_blank"
             rel="noopener noreferrer"
           >
             SnapTip
           </a>
-          {" "}&mdash; business management for automotive appearance shops
+          {", "}business management for window tint and PPF shops
         </p>
         <div className="flex items-center gap-4 flex-wrap justify-center sm:justify-end">
           <Link href="/faq" className="text-xs text-text-dim hover:text-text-muted transition-colors">

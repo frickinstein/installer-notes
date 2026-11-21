@@ -6,6 +6,7 @@ import { getVehicleRequestInfo } from "@/actions/requests";
 import { getSiteType } from "@/lib/site";
 import { VehicleTabs } from "@/components/VehicleTabs";
 import { RequestInfoButton } from "@/components/RequestInfoButton";
+import { SnapTipLine } from "@/components/SnapTipLine";
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -116,6 +117,8 @@ export default async function VehiclePage({
         groupId={groupId}
         defaultTab={siteType ?? undefined}
       />
+
+      <SnapTipLine siteType={siteType} />
     </div>
   );
 }

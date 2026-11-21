@@ -255,7 +255,7 @@ const generalFAQs: FAQItem[] = [
         Yes, 100% free. No trial, no credit card, no premium tier. Installer
         Notes is a community tool built by{" "}
         <a
-          href="https://snaptip.app"
+          href="https://www.snaptip.app/"
           className="text-primary hover:underline"
           target="_blank"
           rel="noopener noreferrer"
@@ -276,7 +276,7 @@ const generalFAQs: FAQItem[] = [
         community side of the platform — your account works on both. You can
         learn more at{" "}
         <a
-          href="https://snaptip.app"
+          href="https://www.snaptip.app/"
           className="text-primary hover:underline"
           target="_blank"
           rel="noopener noreferrer"
