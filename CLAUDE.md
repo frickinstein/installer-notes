@@ -37,6 +37,11 @@ snapshot, SnapTip tables included). **Every migration — ours included — is n
 
 ## Hard rules
 
+- **The vehicle catalog is read through SnapTip's metered functions, never the table** (2026-11-24):
+  `vehicle_catalog_group_search(p_query)` for search (counts new vehicles against a daily allowance, returns `limited`) and
+  `vehicle_catalog_groups(p_group_ids)` for a vehicle page or labels by group id (not counted). Website: `src/actions/vehicles.ts`;
+  phone app: `mobile/src/lib/queries/vehicles.ts`. A signed-in user's `.from("vehicle_catalog")` returns nothing once SnapTip
+  migration 266 is applied. Admin catalog tools use `adminClient()` after the role check.
 - Moderation writes on another user's row: `adminClient()` + assert a returned row (`.select().maybeSingle()`,
   `src/actions/admin.ts`) — the user-scoped client matches zero rows under RLS and reports success silently (fixed 2026-08-21).
 - Several "Mods …" RLS policies are `USING(true)` (ratings delete, audits, admin log, notifications insert); the app

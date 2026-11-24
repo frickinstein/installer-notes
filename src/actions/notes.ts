@@ -272,17 +272,18 @@ export async function getRecentNotes(limit = 30) {
   if (!notes || notes.length === 0) return [];
 
   const groupIds = [...new Set(notes.map((n) => n.group_id))];
-  const { data: vehicles } = await supabase
-    .from("vehicle_catalog")
-    .select("group_id, year, make, model, body_type_alt")
-    .in("group_id", groupIds);
+  // Shared catalog: read by group id through SnapTip's function, never the table.
+  const { data: vehicles } = await supabase.rpc("vehicle_catalog_groups", { p_group_ids: groupIds });
 
   const vehicleMap: Record<string, { make: string; model: string; body_type_alt: string; years: number[] }> = {};
-  for (const v of vehicles ?? []) {
-    if (!vehicleMap[v.group_id]) {
-      vehicleMap[v.group_id] = { make: v.make, model: v.model, body_type_alt: v.body_type_alt, years: [] };
-    }
-    vehicleMap[v.group_id].years.push(v.year);
+  type Group = { group_id: string; make: string; model: string; body_types: string[]; year_start: number; year_end: number };
+  for (const g of (vehicles ?? []) as Group[]) {
+    vehicleMap[g.group_id] = {
+      make: g.make,
+      model: g.model,
+      body_type_alt: (g.body_types ?? []).join(" / "),
+      years: [g.year_start, g.year_end],
+    };
   }
 
   return notes.map((n) => {

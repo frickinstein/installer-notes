@@ -47,7 +47,7 @@ export async function getAdminStats() {
   const admin = adminClient();
 
   const [vehicles, notes, users, pendingNotes, reportedReviews, pendingAudits] = await Promise.all([
-    supabase.from("vehicle_catalog").select("id", { count: "exact", head: true }),
+    admin.from("vehicle_catalog").select("id", { count: "exact", head: true }),
     supabase.from("installer_notes").select("id", { count: "exact", head: true }).eq("status", "approved"),
     supabase.from("profiles").select("id", { count: "exact", head: true }),
     supabase.from("installer_notes").select("id", { count: "exact", head: true }).in("status", ["flagged", "pending"]),

@@ -473,7 +473,11 @@ export type Database = {
       }
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      // SnapTip's metered catalog functions (its migration 265).
+      vehicle_catalog_group_search: { Args: { p_query: string }; Returns: unknown };
+      vehicle_catalog_groups: { Args: { p_group_ids: string[] }; Returns: unknown };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };

@@ -45,11 +45,17 @@ export default function SearchScreen() {
           <Loading />
         ) : (
           <FlatList
-            data={results.data ?? []}
+            data={results.data?.results ?? []}
             keyExtractor={(v) => v.group_id}
             contentContainerStyle={styles.list}
             keyboardShouldPersistTaps="handled"
-            ListEmptyComponent={<Empty>{`No vehicles match "${debounced}".`}</Empty>}
+            ListEmptyComponent={
+              <Empty>
+                {results.data?.limited
+                  ? "You've reached today's limit for looking up new vehicles. Vehicles you've already looked up still work, and the limit resets tomorrow."
+                  : `No vehicles match "${debounced}".`}
+              </Empty>
+            }
             renderItem={({ item }) => <VehicleRow v={item} />}
           />
         )

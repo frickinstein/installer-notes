@@ -46,6 +46,7 @@ export function VehicleSearch({ recentNotes }: { recentNotes?: RecentNote[] }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<VehicleResult[]>([]);
   const [searching, setSearching] = useState(false);
+  const [limited, setLimited] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -53,6 +54,7 @@ export function VehicleSearch({ recentNotes }: { recentNotes?: RecentNote[] }) {
 
     if (query.length < 2) {
       setResults([]);
+      setLimited(false);
       return;
     }
 
@@ -60,7 +62,8 @@ export function VehicleSearch({ recentNotes }: { recentNotes?: RecentNote[] }) {
     debounceRef.current = setTimeout(async () => {
       trackEvent("search_performed", { search_term: query });
       const data = await searchVehicleCatalogGrouped(query);
-      setResults(data as VehicleResult[]);
+      setResults(data.results as VehicleResult[]);
+      setLimited(data.limited);
       setSearching(false);
     }, 250);
 
@@ -141,7 +144,13 @@ export function VehicleSearch({ recentNotes }: { recentNotes?: RecentNote[] }) {
         </div>
       )}
 
-      {query.length >= 2 && !searching && results.length === 0 && (
+      {query.length >= 2 && !searching && limited && (
+        <p className="mt-4 text-center text-text-dim text-sm">
+          You&rsquo;ve reached today&rsquo;s limit for looking up new vehicles. Vehicles you&rsquo;ve already looked up still work, and the limit resets tomorrow.
+        </p>
+      )}
+
+      {query.length >= 2 && !searching && !limited && results.length === 0 && (
         <p className="mt-4 text-center text-text-dim text-sm">
           No vehicles found for &ldquo;{query}&rdquo;
         </p>
